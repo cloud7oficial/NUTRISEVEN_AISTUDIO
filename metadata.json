@@ -1,0 +1,6 @@
+{
+  "name": "NutriSeven — Alta Performance Nutricional",
+  "description": "Landing page de alta conversão do NutriSeven com calculadora de calorias e macros, projeção de metas, comparador Grátis vs Premium e guia de alimentos substitutos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
