@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import { pricingPlans } from '../data/nutritionData';
+import { PlanPricingConfig } from '../types';
 import { Check, X, Sparkles, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 
 interface PricingComparisonProps {
   onOpenCheckout: (planId: 'premium' | 'vip') => void;
   onScrollToCalculator: () => void;
+  plansConfig?: PlanPricingConfig[];
 }
 
 export const PricingComparison: React.FC<PricingComparisonProps> = ({
   onOpenCheckout,
   onScrollToCalculator,
+  plansConfig,
 }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+
+  // Merge pricingPlans with custom dynamic configurations if available
+  const activePlans = pricingPlans.map((p) => {
+    const custom = plansConfig?.find((c) => c.id === p.id);
+    if (!custom) return p;
+    return {
+      ...p,
+      monthlyPrice: custom.monthlyPrice,
+      annualPrice: custom.annualPrice,
+    };
+  });
 
   return (
     <section id="planos" className="relative py-24 bg-[#07080C]">
@@ -76,7 +90,7 @@ export const PricingComparison: React.FC<PricingComparisonProps> = ({
 
         {/* 3 Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-          {pricingPlans.map((plan) => {
+          {activePlans.map((plan) => {
             const isFree = plan.id === 'free';
             const isPremium = plan.id === 'premium';
             const price = billingCycle === 'annual' ? plan.annualPrice : plan.monthlyPrice;

@@ -5,9 +5,11 @@ import { ShoppingCart, Check, Plus, Trash2, Copy, Sparkles, Scale, RefreshCw, Ar
 
 interface FoodSwapperProps {
   onOpenCheckout: (planId: 'premium' | 'vip') => void;
+  foods?: FoodItem[];
 }
 
-export const FoodSwapper: React.FC<FoodSwapperProps> = ({ onOpenCheckout }) => {
+export const FoodSwapper: React.FC<FoodSwapperProps> = ({ onOpenCheckout, foods }) => {
+  const activeFoods = foods || foodDatabase;
   const [category, setCategory] = useState<'protein' | 'carb' | 'fat'>('protein');
   const [selectedFoodId, setSelectedFoodId] = useState<string>('p1'); // Default: Peito de Frango
   const [portionGrams, setPortionGrams] = useState<number>(150);
@@ -26,13 +28,13 @@ export const FoodSwapper: React.FC<FoodSwapperProps> = ({ onOpenCheckout }) => {
 
   // Available foods in category
   const categoryFoods = useMemo(() => {
-    return foodDatabase.filter((f) => f.category === category);
-  }, [category]);
+    return activeFoods.filter((f) => f.category === category);
+  }, [category, activeFoods]);
 
   // Selected food item
   const selectedFood = useMemo(() => {
-    return foodDatabase.find((f) => f.id === selectedFoodId) || categoryFoods[0];
-  }, [selectedFoodId, categoryFoods]);
+    return activeFoods.find((f) => f.id === selectedFoodId) || categoryFoods[0];
+  }, [selectedFoodId, categoryFoods, activeFoods]);
 
   // Calculate target key macro delivered by the source portion
   const targetMacroGrams = useMemo(() => {

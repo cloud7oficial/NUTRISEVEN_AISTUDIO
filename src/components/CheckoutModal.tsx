@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { pricingPlans } from '../data/nutritionData';
-import { UserProfile } from '../types';
+import { PlanPricingConfig, Transaction, UserProfile } from '../types';
 import { X, ShieldCheck, CheckCircle2, Zap, QrCode, CreditCard, Copy, Check } from 'lucide-react';
 
 interface CheckoutModalProps {
@@ -8,6 +8,8 @@ interface CheckoutModalProps {
   onClose: () => void;
   onUpgradeSuccess: (newPlan: 'premium' | 'vip') => void;
   currentUser: UserProfile | null;
+  plansConfig?: PlanPricingConfig[];
+  onNewTransaction?: (txn: Transaction) => void;
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -15,6 +17,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   onUpgradeSuccess,
   currentUser,
+  plansConfig,
+  onNewTransaction,
 }) => {
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
   const [pixCopied, setPixCopied] = useState(false);
@@ -22,10 +26,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!planId) return null;
 
-  const plan = pricingPlans.find((p) => p.id === planId) || pricingPlans[1];
+  const basePlan = pricingPlans.find((p) => p.id === planId) || pricingPlans[1];
+  const customConfig = plansConfig?.find((c) => c.id === planId);
+  const activeMonthlyPrice = customConfig?.monthlyPrice ?? basePlan.monthlyPrice;
 
   const handleConfirm = () => {
     setSuccess(true);
+    
+    // Dispatch new transaction to admin store
+    if (onNewTransaction) {
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+        now.getDate()
+      ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(
+        now.getMinutes()
+      ).padStart(2, '0')}`;
+
+      const newTxn: Transaction = {
+        id: 'TXN-' + Math.floor(10000 + Math.random() * 90000),
+        customerName: currentUser?.name || 'Cliente Novo',
+        customerEmail: currentUser?.email || 'novo.cliente@gmail.com',
+        planId,
+        planName: basePlan.name,
+        amount: activeMonthlyPrice,
+        method: paymentMethod === 'pix' ? 'pix' : 'credit_card',
+        status: 'approved',
+        date: dateStr,
+      };
+      onNewTransaction(newTxn);
+    }
+
     setTimeout(() => {
       onUpgradeSuccess(planId);
       setSuccess(false);
@@ -61,7 +91,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               Parabéns, Assinatura Ativada!
             </h3>
             <p className="text-sm text-slate-300 max-w-sm mx-auto">
-              Seu plano <strong className="text-[#00FF87]">{plan.name}</strong> está 100% liberado. Todos os cardápios, listas e ferramentas foram desbloqueados.
+              Seu plano <strong className="text-[#00FF87]">{basePlan.name}</strong> está 100% liberado. Todos os cardápios, listas e ferramentas foram desbloqueados.
             </p>
           </div>
         ) : (
@@ -74,7 +104,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <span>Checkout Seguro NutriSeven</span>
               </div>
               <h3 className="font-athletic text-2xl uppercase tracking-wider text-white">
-                Assinar {plan.name}
+                Assinar {basePlan.name}
               </h3>
               <p className="text-xs text-slate-400">
                 Acesso imediato e garantia incondicional de 7 dias com devolução integral.
@@ -86,7 +116,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div>
                 <span className="text-xs text-slate-400 block">Total a pagar</span>
                 <span className="font-mono text-2xl font-extrabold text-[#00FF87]">
-                  R$ {plan.monthlyPrice.toFixed(2).replace('.', ',')}
+                  R$ {activeMonthlyPrice.toFixed(2).replace('.', ',')}
                   <span className="text-xs font-normal text-slate-400">/mês</span>
                 </span>
               </div>
@@ -133,7 +163,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {paymentMethod === 'pix' ? (
               <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-3 text-center">
                 <div className="h-32 w-32 mx-auto rounded-xl bg-white p-2 flex items-center justify-center">
-                  {/* Visual simulated QR code */}
                   <div className="grid grid-cols-6 gap-1 w-full h-full p-1 bg-black rounded">
                     {[...Array(36)].map((_, i) => (
                       <div

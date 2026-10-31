@@ -1,12 +1,13 @@
 import React from 'react';
-import { Zap, ShieldCheck, Heart } from 'lucide-react';
+import { Zap, ShieldCheck, Lock } from 'lucide-react';
 
 interface FooterProps {
   onScrollTo: (id: string) => void;
   onOpenCheckout: (planId: 'premium' | 'vip') => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenCheckout }) => {
+export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenCheckout, onOpenAdmin }) => {
   return (
     <footer className="border-t border-white/10 bg-[#05060A] pt-16 pb-12 text-slate-400">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
@@ -67,6 +68,15 @@ export const Footer: React.FC<FooterProps> = ({ onScrollTo, onOpenCheckout }) =>
                   className="hover:text-[#00FF87] transition-colors"
                 >
                   Planos & Assinatura NutriSeven Premium
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={onOpenAdmin}
+                  className="hover:text-white text-slate-500 transition-colors flex items-center gap-1.5 pt-1"
+                >
+                  <Lock className="h-3 w-3" />
+                  <span>Área do Administrador</span>
                 </button>
               </li>
             </ul>

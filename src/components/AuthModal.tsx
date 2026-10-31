@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
-import { X, LogIn, UserPlus, Lock, Mail, User, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ADMIN_CREDENTIALS } from '../data/adminStore';
+import { X, Lock, Mail, User } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,10 +20,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (!email || !password) {
       setError('Por favor preencha todos os campos.');
       return;
     }
+
+    // Check Master Admin Credentials
+    if (
+      email.trim().toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase() &&
+      password.trim() === ADMIN_CREDENTIALS.password
+    ) {
+      const adminUser: UserProfile = {
+        id: 'usr_admin',
+        name: ADMIN_CREDENTIALS.name,
+        email: ADMIN_CREDENTIALS.email,
+        role: 'admin',
+        plan: 'vip',
+        status: 'active',
+        registeredAt: new Date().toISOString(),
+      };
+      onLoginSuccess(adminUser);
+      onClose();
+      return;
+    }
+
     if (tab === 'register' && !name) {
       setError('Por favor informe seu nome.');
       return;
@@ -32,23 +55,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
       id: 'usr_' + Date.now(),
       name: tab === 'register' ? name : (email.split('@')[0] || 'Atleta NutriSeven'),
       email,
+      role: 'user',
       plan: 'free',
+      status: 'active',
       registeredAt: new Date().toISOString(),
     };
 
     onLoginSuccess(newUser);
-    onClose();
-  };
-
-  const handleDemoLogin = (planType: 'free' | 'premium') => {
-    const demoUser: UserProfile = {
-      id: 'demo_' + Date.now(),
-      name: planType === 'premium' ? 'Carlos Atleta (Premium)' : 'Lucas Silva (Grátis)',
-      email: planType === 'premium' ? 'carlos.atleta@nutriseven.app' : 'lucas.demo@nutriseven.app',
-      plan: planType,
-      registeredAt: new Date().toISOString(),
-    };
-    onLoginSuccess(demoUser);
     onClose();
   };
 
@@ -75,7 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
           </h3>
           <p className="text-xs text-slate-400">
             {tab === 'login'
-              ? 'Entre para visualizar seu histórico, metas e planos salvos.'
+              ? 'Entre com seu e-mail e senha cadastrados.'
               : 'Cadastre-se grátis para salvar seus cálculos de macros.'}
           </p>
         </div>
@@ -129,7 +142,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Seu nome"
+                  placeholder="Seu nome completo"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-xl border border-white/15 bg-black/40 pl-10 pr-3.5 py-2.5 text-xs font-medium text-white focus:border-[#00FF87] focus:outline-none"
@@ -173,34 +186,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
 
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-[#00FF87] hover:bg-[#10B981] font-bold text-xs uppercase tracking-wider text-black transition-all shadow-[0_0_15px_rgba(0,255,135,0.3)] active:scale-95 mt-2"
+            className="w-full py-3 rounded-xl bg-[#00FF87] hover:bg-[#10B981] font-bold text-xs uppercase tracking-wider text-black transition-all shadow-[0_0_15px_rgba(0,255,135,0.3)] active:scale-95 mt-4"
           >
-            {tab === 'login' ? 'Entrar no NutriSeven' : 'Concluir Cadastro Grátis'}
+            {tab === 'login' ? 'Entrar' : 'Concluir Cadastro'}
           </button>
         </form>
-
-        {/* Fast Demo Login for instant review */}
-        <div className="mt-6 pt-5 border-t border-white/10 space-y-2">
-          <span className="text-[11px] text-slate-400 block text-center uppercase tracking-wider font-semibold">
-            Testar Rapidamente com 1 Clique (Demonstração)
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('free')}
-              className="py-2 px-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
-            >
-              Entrar como Grátis
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('premium')}
-              className="py-2 px-2.5 rounded-lg border border-[#00FF87]/30 bg-[#00FF87]/10 hover:bg-[#00FF87]/20 text-[11px] font-bold text-[#00FF87] transition-colors"
-            >
-              Entrar como Premium ★
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>

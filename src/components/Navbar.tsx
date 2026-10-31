@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
-import { Zap, User, LogIn, LogOut, CheckCircle2, Menu, X } from 'lucide-react';
+import { Zap, User, LogIn, LogOut, CheckCircle2, Menu, X, Shield } from 'lucide-react';
 
 interface NavbarProps {
   user: UserProfile | null;
   onOpenAuth: () => void;
   onLogout: () => void;
   onOpenCheckout: (planId: 'premium' | 'vip') => void;
+  onGoToAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
   onLogout,
   onOpenCheckout,
+  onGoToAdmin,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -24,6 +26,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#07080C]/85 backdrop-blur-md">
@@ -71,6 +75,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Actions & Auth */}
         <div className="hidden sm:flex items-center gap-3 shrink-0">
+          {isAdmin && onGoToAdmin && (
+            <button
+              onClick={onGoToAdmin}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-xs font-bold text-amber-300 transition-all shadow-[0_0_15px_rgba(245,158,11,0.25)] whitespace-nowrap"
+            >
+              <Shield className="h-3.5 w-3.5 text-amber-400" />
+              <span>Painel Admin</span>
+            </button>
+          )}
+
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 border border-white/10">
@@ -82,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     {user.name}
                   </span>
                   <span className="font-mono text-[10px] text-[#00FF87] uppercase">
-                    Plano {user.plan}
+                    {user.role === 'admin' ? 'ADMIN' : `Plano ${user.plan}`}
                   </span>
                 </div>
               </div>
@@ -104,23 +118,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {user?.plan === 'premium' || user?.plan === 'vip' ? (
+          {!isAdmin && (user?.plan === 'premium' || user?.plan === 'vip') ? (
             <div className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-[#00FF87] bg-[#00FF87]/10 rounded-lg border border-[#00FF87]/30 whitespace-nowrap shrink-0">
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Acesso Ativo</span>
             </div>
-          ) : (
+          ) : !isAdmin ? (
             <button
               onClick={() => onOpenCheckout('premium')}
               className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-black bg-[#00FF87] hover:bg-[#10B981] hover:shadow-[0_0_20px_rgba(0,255,135,0.4)] transition-all rounded-lg active:scale-95 whitespace-nowrap shrink-0"
             >
               Assinar Premium
             </button>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile Hamburger Button */}
         <div className="flex sm:hidden items-center gap-2">
+          {isAdmin && onGoToAdmin && (
+            <button
+              onClick={onGoToAdmin}
+              className="px-2 py-1 text-[11px] font-bold text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded-md"
+            >
+              Admin
+            </button>
+          )}
           <button
             onClick={() => onOpenCheckout('premium')}
             className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-black bg-[#00FF87] rounded-md"
@@ -166,6 +188,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+            {isAdmin && onGoToAdmin && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onGoToAdmin();
+                }}
+                className="w-full py-2.5 text-center text-xs font-bold rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 flex items-center justify-center gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                <span>Painel Administrativo Interno</span>
+              </button>
+            )}
+
             {user ? (
               <div className="flex items-center justify-between py-1 text-sm text-slate-300">
                 <span>Olá, <strong className="text-white">{user.name}</strong></span>

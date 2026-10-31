@@ -52,6 +52,39 @@ export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  role?: 'admin' | 'user';
   plan: 'free' | 'premium' | 'vip';
+  status?: 'active' | 'suspended';
   registeredAt: string;
+  totalPaid?: number;
+}
+
+export interface Transaction {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  planId: 'premium' | 'vip';
+  planName: string;
+  amount: number;
+  method: 'pix' | 'credit_card';
+  status: 'approved' | 'pending' | 'refunded';
+  date: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountPercent: number;
+  validUntil: string;
+  usageCount: number;
+  maxUses: number;
+  active: boolean;
+}
+
+export interface PlanPricingConfig {
+  id: 'free' | 'premium' | 'vip';
+  name: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  badge: string;
 }
